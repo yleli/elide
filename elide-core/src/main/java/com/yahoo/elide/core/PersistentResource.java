@@ -1437,8 +1437,10 @@ public class PersistentResource<T> implements com.yahoo.elide.security.Persisten
      * @param value the value to set
      */
     protected void setValue(String fieldName, Object value) {
+        DataStoreTransaction tx = (requestScope.getTransaction() == null
+                ? this.transaction : requestScope.getTransaction());
         final Object original = getValueUnchecked(fieldName);
-        dictionary.setValue(obj, fieldName, value);
+        tx.setAttribute(obj, fieldName, value, requestScope);
         triggerUpdate(fieldName, original, value);
     }
 
@@ -1450,7 +1452,8 @@ public class PersistentResource<T> implements com.yahoo.elide.security.Persisten
      * @return the value
      */
     public Object getValue(Object target, String fieldName, RequestScope requestScope) {
-        DataStoreTransaction tx = (requestScope.getTransaction() == null ? this.transaction : requestScope.getTransaction());
+        DataStoreTransaction tx = (requestScope.getTransaction() == null
+                ? this.transaction : requestScope.getTransaction());
         return tx.getAttribute(target, fieldName, requestScope);
     }
 

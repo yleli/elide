@@ -256,6 +256,8 @@ public interface DataStoreTransaction extends Closeable {
                               String attributeName,
                               Object attributeValue,
                               RequestScope scope) {
+        EntityDictionary dictionary = scope.getDictionary();
+        dictionary.setValue(entity, attributeName, attributeValue);
     }
 
     /**
