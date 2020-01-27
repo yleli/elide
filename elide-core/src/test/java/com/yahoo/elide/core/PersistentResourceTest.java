@@ -21,6 +21,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doCallRealMethod;
 
 import com.yahoo.elide.ElideSettingsBuilder;
 import com.yahoo.elide.annotation.Audit;
@@ -1376,10 +1377,13 @@ public class PersistentResourceTest extends PersistenceResourceTestSetup {
 
         DataStoreTransaction tx = mock(DataStoreTransaction.class);
 
-        when(tx.getRelation(any(), eq(fun), eq("relation3"), any(), any(), any(), any())).thenReturn(child);
-
         User goodUser = new User(1);
         RequestScope goodScope = new RequestScope(null, null, tx, goodUser, null, elideSettings);
+
+        when(tx.getRelation(any(), eq(fun), eq("relation3"), any(), any(), any(), any())).thenReturn(child);
+        when(tx.getAttribute(eq(fun), eq("relation3"), eq(goodScope))).thenCallRealMethod();
+        doCallRealMethod().when(tx).setAttribute(eq(fun), eq("relation3"), any(), eq(goodScope));
+
         PersistentResource<FunWithPermissions> funResource = new PersistentResource<>(fun, null, "1", goodScope);
         funResource.clearRelation("relation3");
 
