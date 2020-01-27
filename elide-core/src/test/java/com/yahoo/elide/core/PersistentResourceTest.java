@@ -1532,9 +1532,13 @@ public class PersistentResourceTest extends PersistenceResourceTestSetup {
 
         DataStoreTransaction tx = mock(DataStoreTransaction.class);
 
-        when(tx.getRelation(any(), eq(left), eq("noDeleteOne2One"), any(), any(), any(), any())).thenReturn(noDelete);
         User goodUser = new User(1);
         RequestScope goodScope = new RequestScope(null, null, tx, goodUser, null, elideSettings);
+
+        when(tx.getRelation(any(), eq(left), eq("noDeleteOne2One"), any(), any(), any(), any())).thenReturn(noDelete);
+        when(tx.getAttribute(eq(left), eq("noDeleteOne2One"), eq(goodScope))).thenCallRealMethod();
+        doCallRealMethod().when(tx).setAttribute(eq(left), eq("noDeleteOne2One"), any(), eq(goodScope));
+
         PersistentResource<Left> leftResource = new PersistentResource<>(left, null, "1", goodScope);
         assertTrue(leftResource.clearRelation("noDeleteOne2One"));
         assertNull(leftResource.getObject().getNoDeleteOne2One());
