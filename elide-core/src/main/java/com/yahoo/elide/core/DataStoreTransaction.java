@@ -176,8 +176,8 @@ public interface DataStoreTransaction extends Closeable {
             Object entity,
             Relationship relationship,
             RequestScope scope) {
-
-        return PersistentResource.getValue(entity, relationship.getName(), scope);
+        return this.getAttribute(entity, Attribute.builder().name(relationship.getName()).build(), scope);
+//        return PersistentResource.getValue(entity, relationship.getName(), scope);
     }
 
     /**
@@ -227,8 +227,8 @@ public interface DataStoreTransaction extends Closeable {
     default Object getAttribute(Object entity,
                                 Attribute attribute,
                                 RequestScope scope) {
-        return PersistentResource.getValue(entity, attribute.getName(), scope);
-
+        return scope.getDictionary().getValue(entity, attribute.getName(), scope);
+//        return PersistentResource.getValue(entity, attribute.getName(), scope);
     }
 
     /**

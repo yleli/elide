@@ -21,6 +21,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doCallRealMethod;
 
 import com.yahoo.elide.ElideSettingsBuilder;
 import com.yahoo.elide.annotation.Audit;
@@ -111,6 +112,8 @@ public class PersistentResourceTest extends PersistenceResourceTestSetup {
     @BeforeEach
     public void beforeTest() {
         reset(tx);
+        when(tx.getAttribute(any(), any(), any())).thenCallRealMethod();
+        doCallRealMethod().when(tx).setAttribute(any(), any(), any());
     }
 
     @Test
@@ -403,42 +406,47 @@ public class PersistentResourceTest extends PersistenceResourceTestSetup {
         FunWithPermissions fun = new FunWithPermissions();
         fun.setField3("testValue");
         String result;
-        result = (String) getValue(fun, "field3", getRequestScope());
+
+        RequestScope scope = new TestRequestScope(tx, goodUser, dictionary);
+        PersistentResource<FunWithPermissions> funResource = new PersistentResource<>(fun, null, "3", scope);
+
+        result = (String) funResource.getValue(fun, "field3", scope);
         assertEquals("testValue", result, "getValue should set the appropriate value in the resource");
 
         fun.setField1("testValue2");
 
-        result = (String) getValue(fun, "field1", getRequestScope());
+        result = (String) funResource.getValue(fun, "field1", scope);
         assertEquals(result, "testValue2", "getValue should set the appropriate value in the resource");
 
         Child testChild = newChild(3);
         fun.setRelation1(Sets.newHashSet(testChild));
 
         @SuppressWarnings("unchecked")
-        Set<Child> children = (Set<Child>) getValue(fun, "relation1", getRequestScope());
+        Set<Child> children = (Set<Child>) funResource.getValue(fun, "relation1", scope);
 
         assertTrue(children.contains(testChild), "getValue should set the correct relation.");
         assertEquals(1, children.size(), "getValue should set the relation with the correct number of elements");
 
         ComputedBean computedBean = new ComputedBean();
+        PersistentResource<ComputedBean> computerBeanResource = new PersistentResource<>(computedBean, null, "3", scope);
 
-        String computedTest1 = (String) getValue(computedBean, "test", getRequestScope());
-        String computedTest2 = (String) getValue(computedBean, "testWithScope", getRequestScope());
-        String computedTest3 = (String) getValue(computedBean, "testWithSecurityScope", getRequestScope());
+        String computedTest1 = (String) computerBeanResource.getValue(computedBean, "test", scope);
+        String computedTest2 = (String) computerBeanResource.getValue(computedBean, "testWithScope", scope);
+        String computedTest3 = (String) computerBeanResource.getValue(computedBean, "testWithSecurityScope", scope);
 
         assertEquals("test1", computedTest1);
         assertEquals("test2", computedTest2);
         assertEquals("test3", computedTest3);
 
         try {
-            getValue(computedBean, "NonComputedWithScope", getRequestScope());
+            computerBeanResource.getValue(computedBean, "NonComputedWithScope", scope);
             fail("Getting a bad relation should throw an InvalidAttributeException.");
         } catch (InvalidAttributeException e) {
             // Do nothing
         }
 
         try {
-            getValue(fun, "badRelation", getRequestScope());
+            computerBeanResource.getValue(fun, "badRelation", scope);
             fail("Getting a bad relation should throw an InvalidAttributeException.");
         } catch (InvalidAttributeException e) {
             return;
@@ -726,7 +734,7 @@ public class PersistentResourceTest extends PersistenceResourceTestSetup {
 
         PersistentResource<FunWithPermissions> funResource = new PersistentResource<>(fun, null, "1", scope);
 
-        assertThrows(InvalidAttributeException.class, () -> funResource.getAttribute("invalid"));
+        assertThrows(InvalidAttributeException.class, () -> funResource.getAttribute(Attribute.builder().name("invalid").type(String.class).build()));
     }
 
     @Test

@@ -1538,8 +1538,17 @@ public class PersistentResource<T> implements com.yahoo.elide.security.Persisten
      * @param requestScope the request scope
      * @return the value
      */
-    public static Object getValue(Object target, String fieldName, RequestScope requestScope) {
-        return requestScope.getDictionary().getValue(target, fieldName, requestScope);
+    public Object getValue(Object target, String fieldName, RequestScope requestScope) {
+        return transaction.getAttribute(
+                target,
+                Attribute
+                        .builder()
+                        .name(fieldName)
+                        .type(requestScope.getDictionary().getType(target.getClass(), fieldName))
+                        .build(),
+                requestScope
+        );
+//        return requestScope.getDictionary().getValue(target, fieldName, requestScope);
     }
 
     /**

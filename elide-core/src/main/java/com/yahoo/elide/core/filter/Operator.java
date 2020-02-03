@@ -5,10 +5,13 @@
  */
 package com.yahoo.elide.core.filter;
 
+import com.yahoo.elide.core.DataStoreTransaction;
+import com.yahoo.elide.core.EntityDictionary;
 import com.yahoo.elide.core.PersistentResource;
 import com.yahoo.elide.core.RequestScope;
 import com.yahoo.elide.core.exceptions.InvalidOperatorNegationException;
 import com.yahoo.elide.core.exceptions.InvalidPredicateException;
+import com.yahoo.elide.request.Attribute;
 import com.yahoo.elide.utils.coerce.CoerceUtil;
 
 import lombok.Getter;
@@ -334,7 +337,15 @@ public enum Operator {
             if (val == null) {
                 break;
             }
-            val = PersistentResource.getValue(val, field, requestScope);
+            DataStoreTransaction tx = requestScope.getTransaction();
+            val = tx.getAttribute(val,
+                    Attribute
+                            .builder()
+                            .name(field)
+                            .type(requestScope.getDictionary().getType(entity.getClass(), field))
+                            .build(),
+                    requestScope);
+//            val = PersistentResource.getValue(val, field, requestScope);
         }
         return val;
     }
