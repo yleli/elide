@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -22,6 +21,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 
 import com.yahoo.elide.ElideSettingsBuilder;
 import com.yahoo.elide.annotation.Audit;
@@ -1866,6 +1866,7 @@ public class PersistentResourceTest extends PersistenceResourceTestSetup {
 
         reset(tx);
         when(tx.getRelation(any(), eq(parent), any(), any())).thenReturn(parent.getChildren());
+        when(tx.getAttribute(eq(parent), any(), any())).thenReturn(parent.getChildren());
 
         parentResource.clearRelation("children");
 

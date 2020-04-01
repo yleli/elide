@@ -1518,6 +1518,17 @@ public class PersistentResource<T> implements com.yahoo.elide.security.Persisten
         triggerUpdate(collectionName, original, collection);
     }
 
+    private Class<?> getFieldAttributeClass(Object target, String fieldName, RequestScope requestScope) {
+        EntityDictionary dictionary = requestScope.getDictionary();
+        Class<?> fieldClass = dictionary.getType(target, fieldName);
+
+        if (fieldClass == null) {
+            throw new InvalidAttributeException(fieldName, dictionary.getJsonAliasFor(target.getClass()));
+        }
+
+        return fieldClass;
+    }
+
     /**
      * Invoke the set[fieldName] method on the target object OR set the field with the corresponding name.
      * @param fieldName the field name to set or invoke equivalent set method
@@ -1544,7 +1555,7 @@ public class PersistentResource<T> implements com.yahoo.elide.security.Persisten
                 Attribute
                         .builder()
                         .name(fieldName)
-                        .type(requestScope.getDictionary().getType(target.getClass(), fieldName))
+                        .type(getFieldAttributeClass(target, fieldName, requestScope))
                         .build(),
                 requestScope
         );
