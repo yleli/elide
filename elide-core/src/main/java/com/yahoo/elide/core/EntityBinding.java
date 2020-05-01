@@ -609,7 +609,7 @@ public class EntityBinding {
         return annotation == NO_ANNOTATION ? null : annotationClass.cast(annotation);
     }
 
-    public boolean shouldInject() {
+    private boolean shouldInject() {
         boolean hasField = getAllFields().stream()
                 .anyMatch(accessibleObject -> accessibleObject.isAnnotationPresent(Inject.class));
 
