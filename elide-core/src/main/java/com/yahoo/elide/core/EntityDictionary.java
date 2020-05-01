@@ -779,11 +779,13 @@ public class EntityDictionary {
      */
     public <T> void initializeEntity(T entity) {
         if (entity != null) {
+            EntityBinding binding = getEntityBinding(entity.getClass());
+
             @SuppressWarnings("unchecked")
-            Initializer<T> initializer = getEntityBinding(entity.getClass()).getInitializer();
+            Initializer<T> initializer = binding.getInitializer();
             if (initializer != null) {
                 initializer.initialize(entity);
-            } else if (injector != null) {
+            } else if (injector != null && binding.isInjected()) {
                 injector.inject(entity);
             }
         }
