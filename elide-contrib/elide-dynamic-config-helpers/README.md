@@ -3,11 +3,11 @@
 Validate the config files in local before deployment.
 
 Sample command:
-```
+```java
 Usage: java -cp <Jar File Name> com.yahoo.elide.contrib.dynamicconfighelpers.validator.DynamicConfigValidator <Path for Model Configs Directory>
 ```
 Expected Model Configs Directory Structure:
-```
+```java
 ├── MODEL_CONFIG_DIR/
 │   ├── tables
 │   │   ├── table1.hjson
