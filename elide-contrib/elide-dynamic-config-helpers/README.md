@@ -1,9 +1,3 @@
-
-
-
-
-
-
 ## Validation for Dynamic Config
 
 Validate the config files in local before deployment.

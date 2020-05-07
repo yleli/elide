@@ -56,17 +56,30 @@ public class DynamicConfigValidator {
             throw new IllegalStateException("Model Configs Directory doesn't exists");
         }
 
-        boolean isVariableConfig = exists(absoluteBasePath + DynamicConfigHelpers.VARIABLE_CONFIG_PATH);
-        boolean isSecurityConfig = exists(absoluteBasePath + DynamicConfigHelpers.SECURITY_CONFIG_PATH);
-        boolean isTableConfig = exists(absoluteBasePath + DynamicConfigHelpers.TABLE_CONFIG_PATH);
+        readVariableConfig(absoluteBasePath);
+        if (readSecurityConfig(absoluteBasePath)) {
+            validateRoleInSecurityConfig(elideSecurityConfig);
+        }
+        if (readTableConfig(absoluteBasePath)) {
+            validateSqlInTableConfig(elideTableConfig);
+        }
 
+        log.info("Configs Validation Passed!");
+    }
+
+    private static boolean readVariableConfig(String absoluteBasePath) {
+        boolean isVariableConfig = exists(absoluteBasePath + DynamicConfigHelpers.VARIABLE_CONFIG_PATH);
         try {
             variables = isVariableConfig ? DynamicConfigHelpers.getVaribalesPojo(absoluteBasePath)
                     : Collections.<String, Object>emptyMap();
         } catch (Exception e) {
             throw new IllegalStateException("Error while parsing variable config at location: " + absoluteBasePath, e);
         }
+        return isVariableConfig;
+    }
 
+    private static boolean readSecurityConfig(String absoluteBasePath) {
+        boolean isSecurityConfig = exists(absoluteBasePath + DynamicConfigHelpers.SECURITY_CONFIG_PATH);
         if (isSecurityConfig) {
             String securityConfigContent = DynamicConfigHelpers
                     .readConfigFile(new File(absoluteBasePath + DynamicConfigHelpers.SECURITY_CONFIG_PATH));
@@ -77,10 +90,12 @@ public class DynamicConfigValidator {
                 throw new IllegalStateException("Error while parsing security config at location: " + absoluteBasePath,
                         e);
             }
-            // Validate Security Config
-            validateRoleInSecurityConfig(elideSecurityConfig);
         }
+        return isSecurityConfig;
+    }
 
+    private static boolean readTableConfig(String absoluteBasePath) {
+        boolean isTableConfig = exists(absoluteBasePath + DynamicConfigHelpers.TABLE_CONFIG_PATH);
         if (isTableConfig) {
             Collection<File> tableConfigs = FileUtils.listFiles(
                     new File(absoluteBasePath + DynamicConfigHelpers.TABLE_CONFIG_PATH), new String[] { "hjson" },
@@ -99,15 +114,12 @@ public class DynamicConfigValidator {
             } catch (Exception e) {
                 throw new IllegalStateException("Error while parsing table config at location: " + absoluteBasePath, e);
             }
-            // Validate Table Config
-            validateSqlInTableConfig(elideTableConfig);
         } else {
             usage();
             throw new IllegalStateException("Table Configs Directory doesn't exists at location: " + absoluteBasePath
                     + DynamicConfigHelpers.TABLE_CONFIG_PATH);
         }
-
-        log.info("Configs Validation Passed!");
+        return isTableConfig;
     }
 
     private static boolean exists(String filePath) {
@@ -120,8 +132,7 @@ public class DynamicConfigValidator {
         while (regexMatcher.find()) {
             String str = regexMatcher.group(1).trim();
             if (!variables.containsKey(str)) {
-                throw new IllegalStateException(str
-                        + " is used as a variable in either table or security config files "
+                throw new IllegalStateException(str + " is used as a variable in either table or security config files "
                         + "but is not defined in variables config file.");
             }
         }
