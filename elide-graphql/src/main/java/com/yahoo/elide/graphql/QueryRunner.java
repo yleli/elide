@@ -192,9 +192,11 @@ public class QueryRunner {
                 }
                 requestScope.saveOrCreateObjects();
             }
-            tx.flush(requestScope);
 
             requestScope.runQueuedPreCommitTriggers();
+
+            tx.flush(requestScope);
+
             elide.getAuditLogger().commit(requestScope);
             tx.commit(requestScope);
             requestScope.runQueuedPostCommitTriggers();

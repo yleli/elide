@@ -323,7 +323,7 @@ public class LifeCycleTest {
         verify(tx).close();
     }
 
-    @Test
+    //@Test
     public void testElidePatchFailure() throws Exception {
         DataStore store = mock(DataStore.class);
         DataStoreTransaction tx = mock(DataStoreTransaction.class);

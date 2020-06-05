@@ -278,9 +278,10 @@ public class Elide {
             if (!isReadOnly) {
                 requestScope.saveOrCreateObjects();
             }
-            tx.flush(requestScope);
 
             requestScope.runQueuedPreCommitTriggers();
+
+            tx.flush(requestScope);
 
             ElideResponse response = buildResponse(responder.get());
 
